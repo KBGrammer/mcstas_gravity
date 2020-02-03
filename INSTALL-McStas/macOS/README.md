@@ -1,3 +1,6 @@
+# This page is OBSOLETE - please refer to https://github.com/McStasMcXtrace/McCode/tree/master/INSTALL-McStas
+
+
 # Installation of McStas 2.5 on macOS 
 
 ## Supported macOS releases
