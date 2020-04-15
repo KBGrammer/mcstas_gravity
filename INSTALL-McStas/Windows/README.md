@@ -1,7 +1,7 @@
 # Installation of McStas 2.5 on Windows 64 bit systems
-(P lease consult this page instead:
+( Please consult this page instead:
 https://github.com/McStasMcXtrace/McCode/blob/master/INSTALL-McStas/Windows/README.md
-- version 2.5 is no longer the most recent version :-) )
+since version 2.5 is no longer the most recent version :-) )
 
 ## IMPORTANT A:
 * If you are behind a proxy server, please use the commands
