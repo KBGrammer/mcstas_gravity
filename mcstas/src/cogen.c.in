@@ -1827,13 +1827,6 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("    innerloop = ncount;");
   coutf("  }");
   coutf("");
-  coutf("double dum0=0;");
-  coutf("double dum1=0;");
-  coutf("#pragma acc declare create(dum0)");
-  coutf("#pragma acc update device(dum0)");
-  coutf("#pragma acc declare create(dum1)");
-  coutf("#pragma acc update device(dum1)");
-  
   coutf("  for (unsigned long long cloop=0; cloop<loops; cloop++) {");
   coutf("    if (loops>1) fprintf(stdout, \"%%d..\", (int)cloop); fflush(stdout);");
   coutf("");
@@ -1848,7 +1841,7 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("    #define VECSIZE 128");
   coutf("    #endif");
   coutf("");
-  coutf("    #pragma acc parallel loop gang vector vector_length(VECSIZE) reduction(+:dum0) reduction(+:dum1)");
+  coutf("    #pragma acc parallel loop gang vector vector_length(VECSIZE)
   coutf("    for (unsigned long pidx=0 ; pidx < innerloop ; pidx++) {");
   coutf("      _class_particle particleN = mcgenstate(); // initial particle");
   coutf("      _class_particle* _particle = &particleN;");
@@ -1856,14 +1849,11 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("");
   coutf("      srandom(_hash((pidx+1)*(seed+1)));");
   coutf("      particle_uservar_init(_particle);");
-  coutf("      dum0 = dum0 + p;");
   coutf("      raytrace(_particle);");
-  coutf("      dum1 = dum1 + p;");
   coutf("    } /* inner for */");
   coutf("    seed = seed+innerloop;");
   coutf("    mcncount += innerloop;");
   coutf("  } /* CPU for */");
-  coutf("  #pragma acc update host(dum0,dum1)");
   coutf("  /* if on GPU, printf has been globally nullified, re-enable here */");
   coutf("  #ifdef OPENACC");
   coutf("  #ifndef MULTICORE");
@@ -1872,7 +1862,6 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("  #endif");
   coutf("  MPI_MASTER(");
   coutf("  printf(\"*** TRACE end *** \\n\");");
-  coutf("  printf(\"In: %%g, Out: %%g \\n\",dum0,dum1);");
   coutf("  );");
   coutf("} /* raytrace_all */");
   coutf("");
