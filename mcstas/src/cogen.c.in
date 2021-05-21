@@ -1319,9 +1319,11 @@ int cogen_section(struct instr_def *instr, char *section, char *section_lower,
     liter = list_iterate(instr->complist);
     while((comp = list_next(liter)) != NULL) {
       coutf("#pragma acc update host(_%s_var)", comp->name);
+      coutf("#pragma acc update host(_%s_var._parameters)", comp->name);
     }
     // attach instrument
     cout("#pragma acc update host(_instrument_var)");
+    cout("#pragma acc update host(_instrument_var._parameters)");
     cout("");
 
     coutf("  siminfo_init(NULL);");
@@ -1393,9 +1395,11 @@ int cogen_section(struct instr_def *instr, char *section, char *section_lower,
     liter = list_iterate(instr->complist);
     while((comp = list_next(liter)) != NULL) {
       coutf("#pragma acc update device(_%s_var)", comp->name);
+      coutf("#pragma acc update device(_%s_var._parameters)", comp->name);
     }
     // update instrument
     cout("#pragma acc update device(_instrument_var)");
+    cout("#pragma acc update device(_instrument_var._parameters)");
     cout("#endif");
   }
   else if (!strcmp(section, "SAVE"))
@@ -1823,6 +1827,13 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("    innerloop = ncount;");
   coutf("  }");
   coutf("");
+  coutf("double dum0=0;");
+  coutf("double dum1=0;");
+  coutf("#pragma acc declare create(dum0)");
+  coutf("#pragma acc update device(dum0)");
+  coutf("#pragma acc declare create(dum1)");
+  coutf("#pragma acc update device(dum1)");
+  
   coutf("  for (unsigned long long cloop=0; cloop<loops; cloop++) {");
   coutf("    if (loops>1) fprintf(stdout, \"%%d..\", (int)cloop); fflush(stdout);");
   coutf("");
@@ -1837,7 +1848,7 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("    #define VECSIZE 128");
   coutf("    #endif");
   coutf("");
-  coutf("    #pragma acc parallel loop gang vector vector_length(VECSIZE)");
+  coutf("    #pragma acc parallel loop gang vector vector_length(VECSIZE) reduction(+:dum0) reduction(+:dum1)");
   coutf("    for (unsigned long pidx=0 ; pidx < innerloop ; pidx++) {");
   coutf("      _class_particle particleN = mcgenstate(); // initial particle");
   coutf("      _class_particle* _particle = &particleN;");
@@ -1845,12 +1856,14 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("");
   coutf("      srandom(_hash((pidx+1)*(seed+1)));");
   coutf("      particle_uservar_init(_particle);");
-  coutf("");
+  coutf("      dum0 = dum0 + p;");
   coutf("      raytrace(_particle);");
+  coutf("      dum1 = dum1 + p;");
   coutf("    } /* inner for */");
   coutf("    seed = seed+innerloop;");
   coutf("    mcncount += innerloop;");
   coutf("  } /* CPU for */");
+  coutf("  #pragma acc update host(dum0,dum1)");
   coutf("  /* if on GPU, printf has been globally nullified, re-enable here */");
   coutf("  #ifdef OPENACC");
   coutf("  #ifndef MULTICORE");
@@ -1859,6 +1872,7 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("  #endif");
   coutf("  MPI_MASTER(");
   coutf("  printf(\"*** TRACE end *** \\n\");");
+  coutf("  printf(\"In: %%g, Out: %%g \\n\",dum0,dum1);");
   coutf("  );");
   coutf("} /* raytrace_all */");
   coutf("");

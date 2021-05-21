@@ -1,0 +1,33 @@
+/*
+* %Example: mini.instr dummy=0 Detector: detector_I=345.995
+*/
+DEFINE INSTRUMENT multi(dummy=2.0)
+
+DECLARE %{
+  /*  double synts;
+      #pragma acc declare create(synts)*/
+%}
+
+INITIALIZE %{
+  /*  synts=1;
+      #pragma acc update device(synts)*/
+%}
+
+TRACE
+
+COMPONENT arm0 = Arm()
+AT (0, 0, 0) ABSOLUTE
+EXTEND %{
+	 vz=2200;
+	 PROP_DT(1.0);
+%}
+COMPONENT mon0 = Monitor_noprop()
+AT (0, 0, 0) ABSOLUTE
+
+COMPONENT arm1 = Multiplier(scalar=dummy)
+AT (0, 0, 0) ABSOLUTE
+
+COMPONENT mon1 = Monitor_noprop()
+    AT (0, 0, 0) ABSOLUTE
+
+END
