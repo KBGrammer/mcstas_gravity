@@ -1841,7 +1841,7 @@ int cogen_raytrace(struct instr_def *instr)
   coutf("    #define VECSIZE 128");
   coutf("    #endif");
   coutf("");
-  coutf("    #pragma acc parallel loop gang vector vector_length(VECSIZE)
+  coutf("    #pragma acc parallel loop gang vector vector_length(VECSIZE)");
   coutf("    for (unsigned long pidx=0 ; pidx < innerloop ; pidx++) {");
   coutf("      _class_particle particleN = mcgenstate(); // initial particle");
   coutf("      _class_particle* _particle = &particleN;");
