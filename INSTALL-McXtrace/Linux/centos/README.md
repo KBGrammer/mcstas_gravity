@@ -1,4 +1,4 @@
-# Installing McXtrace 1.5 on CentOS
+# Installing McXtrace 1.6 on CentOS
 
 McXtrace provides a package repository for use with RedHat-based distributions, such as Fedora 33 or newer. To allow automatic update of your mcxtrace, mcxtrace-components and tools when new revisions are relased, follow the below instruction. **PLEASE NOTE** that our repo-based RPM packages are built on Fedora 33 and will require glibc-2.14 or newer! Hence, a better solution for you may be, to build yourself using the [repo build instructions](https://github.com/McXtraceMcXtrace/McCode/wiki/Building-McStas-McXtrace)
 
