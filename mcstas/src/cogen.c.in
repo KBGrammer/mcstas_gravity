@@ -1518,7 +1518,7 @@ void undef_trace_section(struct instr_def *instr)
 } /* undef_trace_section */
 
 /*******************************************************************************
-* undef_uservars: #define symbols for particle struct USERVARS.
+* def_uservars: #define symbols for particle struct USERVARS.
 *******************************************************************************/
 void def_uservars(struct instr_def *instr)
 {
