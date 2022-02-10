@@ -2174,7 +2174,7 @@ SETTING PARAMETERS (
 
 OUTPUT PARAMETERS ()
 /* X-ray parameters: (x,y,z,kx,ky,kz,phi,t,Ex,Ey,Ez,p) */
-
+NOACC
 
 SHARE %{
   %include "sasview_proxy.c"
