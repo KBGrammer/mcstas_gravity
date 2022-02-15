@@ -1372,7 +1372,6 @@ TRACE
               
               int physics_output;
               physics_output = physics_my(process->eProcess, p_my_trace, k_rotated, process->data_transfer,&Volumes[current_volume]->geometry.focus_data_array.elements[focus_data_index], _particle);
-
               
               my_sum += *p_my_trace;
               #ifdef Union_trace_verbal_setting
@@ -1642,6 +1641,7 @@ TRACE
             // CPU Only
             //if (0 == Volumes[current_volume]->p_physics->p_scattering_array[selected_process].scattering_function(k_new,k,&p,Volumes[current_volume]->p_physics->p_scattering_array[selected_process].data_transfer,&Volumes[current_volume]->geometry.focus_data_array.elements[0])) {
             // GPU Version with flexible function
+
             process = &Volumes[current_volume]->p_physics->p_scattering_array[selected_process];
             if (0 == physics_scattering(process->eProcess, k_new, k, &p, process->data_transfer, &Volumes[current_volume]->geometry.focus_data_array.elements[0], _particle)) {
               /*

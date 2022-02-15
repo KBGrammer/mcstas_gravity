@@ -1,4 +1,4 @@
-%define name			mcxtrace-suite-python
+%define name			mcxtrace-suite-python-ng
 %define summary			A metapackage for McXtrace + python tools
 %define version			@VERSION@
 %define release			1
@@ -17,7 +17,7 @@ Summary:   %{summary}
 Group:     %{group}
 URL:       http://www.mccode.org
 Buildroot: %{buildroot}
-Requires:  mcxtrace-@VERSION@ mcxtrace-comps-@VERSION@ mcxtrace-tools-python-mxplot-chaco-@VERSION@ mcxtrace-tools-python-mxplot-matplotlib-@VERSION@ mcxtrace-tools-python-mxrun-@VERSION@
+Requires:  mcxtrace-@VERSION@ mcxtrace-comps-@VERSION@ mcxtrace-tools-perl-cmdline-@VERSION@ mcxtrace-tools-python-mxplot-pyqtgraph-@VERSION@ mcxtrace-tools-python-mxplot-matplotlib-@VERSION@ mcxtrace-tools-python-mxrun-@VERSION@ mcxtrace-tools-python-mxgui-@VERSION@ mcxtrace-tools-python-mccodelib-@VERSION@ mcxtrace-tools-python-mxdisplay-webgl-@VERSION@ mcxtrace-tools-python-mxdisplay-pyqtgraph-@VERSION@ mcxtrace-tools-python-mxdoc-@VERSION@ mcxtrace-manuals-@VERSION@
 
 %description
 A metapackage for McXtrace + python tools

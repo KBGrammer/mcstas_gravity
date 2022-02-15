@@ -2159,7 +2159,7 @@ DEFINITION PARAMETERS ()
 SETTING PARAMETERS (
   model_index=21,
   model_scale=1.0,
-  vector model_pars={60},
+  vector model_pars={60,0,0,0,0,0,0,0},
   model_abs=0.5,
   xwidth=0,
   yheight=0,
@@ -2177,7 +2177,7 @@ SETTING PARAMETERS (
 
 OUTPUT PARAMETERS ()
 /* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */
-NOACC
+
 
 
 SHARE %{
@@ -2186,14 +2186,25 @@ SHARE %{
 
 DECLARE
 %{
-  float *model_pars_ptr;
   double shape;
   double my_a_v;
+  double modelpars[8];
 %}
 
 INITIALIZE
 %{
-  model_pars_ptr = (float*)model_pars;
+  
+int chosen=model_index;
+#ifndef SASmodel_index
+  exit(fprintf(stderr, "SasView_model: %s: Your instrument was compiled without the define -DSASmodel_index \n"
+	       "ERROR Please recompile your instrument with -DSASmodel_index=%i to enable model_index=%i.\n", NAME_CURRENT_COMP, chosen, chosen));
+#else
+  if (!(SASmodel_index==model_index)) {
+      exit(fprintf(stderr, "SasView_model: %s: Your instrument was compiled with -DSASmodel_index=%i \n"
+		   "ERROR Please recompile your instrument with -DSASmodel_index=%i to enable model_index=%i\n", NAME_CURRENT_COMP, SASmodel_index, chosen, chosen));
+  }
+#endif
+  
 shape=-1;  /* -1:no shape, 0:cyl, 1:box, 2:sphere  */
 if (xwidth && yheight && zdepth)
     shape=1;
@@ -2222,6 +2233,10 @@ if (xwidth && yheight && zdepth)
   }
 
   my_a_v = model_abs*2200*100; /* Is not yet divided by v. 100: Convert barns -> fm^2 */
+  int j;
+  for(j=0;j<8;j++){
+    modelpars[j]=model_pars[j];
+  }
 %}
 
 TRACE
@@ -2278,10 +2293,10 @@ TRACE
     q = sqrt(qx*qx+qy*qy+qz*qz);
 
     float Iq_out;
-    Iq_out = getIq(q, qx, qy, model_pars_ptr);
+    Iq_out = getIq(q, qx, qy, modelpars);
 
     float vol;
-    vol=getFormVol(model_pars_ptr);
+    vol=getFormVol(modelpars);
     // Scale by 1.0E2 [SasView: 1/cm  ->   McStas: 1/m]
     Iq_out = model_scale*Iq_out / vol * 1.0E2;
 
