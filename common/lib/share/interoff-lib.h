@@ -10,8 +10,8 @@
 * %Identification
 * Written by: Reynald Arnerin
 * Date:    Jun 12, 2008
-* Release: 
-* Version: 
+* Release:
+* Version:
 *
 * Object File Format intersection header for McStas. Requires the qsort function.
 *
@@ -38,7 +38,11 @@
 #endif
 
 #ifndef OFF_INTERSECT_MAX
+#ifdef OPENACC
+#define OFF_INTERSECT_MAX 100
+#else
 #define OFF_INTERSECT_MAX 1024
+#endif
 #endif
 
 //#include <float.h>
@@ -57,7 +61,9 @@ typedef struct intersection {
 typedef struct polygon {
   MCNUM* p;       //vertices of the polygon in adjacent order, this way : x1 | y1 | z1 | x2 | y2 | z2 ...
   int npol;       //number of vertices
+  #pragma acc shape(p[0:npol]) init_needed(npol)
   Coords normal;
+  double D;
 } polygon;
 
 typedef struct off_struct {
@@ -65,8 +71,13 @@ typedef struct off_struct {
     long polySize;
     long faceSize;
     Coords* vtxArray;
+    #pragma acc shape(vtxArray[0:vtxSize]) init_needed(vtxSize)
     Coords* normalArray;
+    #pragma acc shape(vtxArray[0:faceSize]) init_needed(faceSize)
     unsigned long* faceArray;
+    #pragma acc shape(vtxArray[0:faceSize][0:polySize]) init_needed(faceSize,polySize)
+    double* DArray;
+    #pragma acc shape(vtxArray[0:polySize]) init_needed(polySize)
     char *filename;
     int mantidflag;
     long mantidoffset;
@@ -79,58 +90,66 @@ typedef struct off_struct {
 * long off_init(  char *offfile, double xwidth, double yheight, double zdepth, off_struct* data)
 * ACTION: read an OFF file, optionally center object and rescale, initialize OFF data structure
 * INPUT: 'offfile' OFF file to read
-*        'xwidth,yheight,zdepth' if given as non-zero, apply bounding box. 
+*        'xwidth,yheight,zdepth' if given as non-zero, apply bounding box.
 *           Specifying only one of these will also use the same ratio on all axes
 *        'notcenter' center the object to the (0,0,0) position in local frame when set to zero
-* RETURN: number of polyhedra and 'data' OFF structure 
+* RETURN: number of polyhedra and 'data' OFF structure
 *******************************************************************************/
-long off_init(  char *offfile, double xwidth, double yheight, double zdepth, 
+long off_init(  char *offfile, double xwidth, double yheight, double zdepth,
                 int notcenter, off_struct* data);
 
 /*******************************************************************************
-* int off_intersect_all(double* t0, double* t3, 
+* int off_intersect_all(double* t0, double* t3,
      Coords *n0, Coords *n3,
-     double x, double y, double z, 
-     double vx, double vy, double vz, 
+     double x, double y, double z,
+     double vx, double vy, double vz,
+     double ax, double ay, double az,
      off_struct *data )
-* ACTION: computes intersection of neutron trajectory with an object. 
+* ACTION: computes intersection of neutron trajectory with an object.
 * INPUT:  x,y,z and vx,vy,vz are the position and velocity of the neutron
+*         ax, ay, az are the local acceleration vector
 *         data points to the OFF data structure
 * RETURN: the number of polyhedra which trajectory intersects
 *         t0 and t3 are the smallest incoming and outgoing intersection times
 *         n0 and n3 are the corresponding normal vectors to the surface
 *         data is the full OFF structure, including a list intersection type
 *******************************************************************************/
-int off_intersect_all(double* t0, double* t3, 
+#pragma acc routine
+int off_intersect_all(double* t0, double* t3,
      Coords *n0, Coords *n3,
-     double x, double y, double z, 
-     double vx, double vy, double vz, 
+     double x, double y, double z,
+     double vx, double vy, double vz,
+     double ax, double ay, double az,
      off_struct *data );
 
 /*******************************************************************************
-* int off_intersect(double* t0, double* t3, 
+* int off_intersect(double* t0, double* t3,
      Coords *n0, Coords *n3,
-     double x, double y, double z, 
-     double vx, double vy, double vz, 
+     double x, double y, double z,
+     double vx, double vy, double vz,
+     double ax, double ay, double az,
      off_struct data )
-* ACTION: computes intersection of neutron trajectory with an object. 
+* ACTION: computes intersection of neutron trajectory with an object.
 * INPUT:  x,y,z and vx,vy,vz are the position and velocity of the neutron
+*         ax, ay, az are the local acceleration vector
 *         data points to the OFF data structure
 * RETURN: the number of polyhedra which trajectory intersects
 *         t0 and t3 are the smallest incoming and outgoing intersection times
 *         n0 and n3 are the corresponding normal vectors to the surface
 *******************************************************************************/
-int off_intersect(double* t0, double* t3, 
+#pragma acc routine
+int off_intersect(double* t0, double* t3,
      Coords *n0, Coords *n3,
-     double x, double y, double z, 
-     double vx, double vy, double vz, 
+     double x, double y, double z,
+     double vx, double vy, double vz,
+     double ax, double ay, double az,
      off_struct data );
 
 /*****************************************************************************
-* int off_intersectx(double* l0, double* l3, 
+* int off_intersectx(double* l0, double* l3,
      Coords *n0, Coords *n3,
-     double x, double y, double z, 
-     double kx, double ky, double kz, 
+     double x, double y, double z,
+     double kx, double ky, double kz,
      off_struct data )
 * ACTION: computes intersection of an xray trajectory with an object.
 * INPUT:  x,y,z and kx,ky,kz, are spatial coordinates and wavevector of the x-ray
@@ -139,10 +158,11 @@ int off_intersect(double* t0, double* t3,
 *         l0 and l3 are the smallest incoming and outgoing intersection lengths
 *         n0 and n3 are the corresponding normal vectors to the surface
 *******************************************************************************/
+#pragma acc routine
 int off_x_intersect(double *l0,double *l3,
      Coords *n0, Coords *n3,
-     double x,  double y,  double z, 
-     double kx, double ky, double kz, 
+     double x,  double y,  double z,
+     double kx, double ky, double kz,
      off_struct data );
 
 /*******************************************************************************
@@ -150,6 +170,33 @@ int off_x_intersect(double *l0,double *l3,
 * ACTION: display up to N_VERTEX_DISPLAYED points from the object
 *******************************************************************************/
 void off_display(off_struct);
+
+/*******************************************************************************
+void p_to_quadratic(double eq[], Coords acc,
+                    Coords pos, Coords vel,
+                    double* teq)
+* ACTION: define the quadratic for the intersection of a parabola with a plane
+* INPUT: 'eq' plane equation
+*        'acc' acceleration vector
+*        'vel' velocity of the particle
+*        'pos' position of the particle
+*         equation of plane A * x + B * y + C * z - D = 0
+*         eq[0] = (C*az)/2+(B*ay)/2+(A*ax)/2
+*         eq[1] = C*vz+B*vy+A*vx
+*         eq[2] = C*z0+B*y0+A*x0-D
+* RETURN: equation of parabola: teq(0) * t^2 + teq(1) * t + teq(2)
+*******************************************************************************/
+void p_to_quadratic(Coords norm, MCNUM d, Coords acc, Coords pos, Coords vel,
+		    double* teq);
+
+/*******************************************************************************
+int quadraticSolve(double eq[], double* x1, double* x2);
+* ACTION: solves the quadratic for the roots x1 and x2 
+*         eq[0] * t^2 + eq[1] * t + eq[2] = 0
+* INPUT: 'eq' the coefficients of the parabola
+* RETURN: roots x1 and x2 and the number of solutions
+*******************************************************************************/
+int quadraticSolve(double* eq, double* x1, double* x2);
 
 #endif
 
