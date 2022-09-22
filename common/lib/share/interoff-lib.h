@@ -38,11 +38,7 @@
 #endif
 
 #ifndef OFF_INTERSECT_MAX
-#ifdef OPENACC
-#define OFF_INTERSECT_MAX 100
-#else
 #define OFF_INTERSECT_MAX 1024
-#endif
 #endif
 
 //#include <float.h>
@@ -61,7 +57,6 @@ typedef struct intersection {
 typedef struct polygon {
   MCNUM* p;       //vertices of the polygon in adjacent order, this way : x1 | y1 | z1 | x2 | y2 | z2 ...
   int npol;       //number of vertices
-  #pragma acc shape(p[0:npol]) init_needed(npol)
   Coords normal;
   double D;
 } polygon;
@@ -71,13 +66,9 @@ typedef struct off_struct {
     long polySize;
     long faceSize;
     Coords* vtxArray;
-    #pragma acc shape(vtxArray[0:vtxSize]) init_needed(vtxSize)
     Coords* normalArray;
-    #pragma acc shape(vtxArray[0:faceSize]) init_needed(faceSize)
     unsigned long* faceArray;
-    #pragma acc shape(vtxArray[0:faceSize][0:polySize]) init_needed(faceSize,polySize)
     double* DArray;
-    #pragma acc shape(vtxArray[0:polySize]) init_needed(polySize)
     char *filename;
     int mantidflag;
     long mantidoffset;
@@ -114,7 +105,6 @@ long off_init(  char *offfile, double xwidth, double yheight, double zdepth,
 *         n0 and n3 are the corresponding normal vectors to the surface
 *         data is the full OFF structure, including a list intersection type
 *******************************************************************************/
-#pragma acc routine
 int off_intersect_all(double* t0, double* t3,
      Coords *n0, Coords *n3,
      double x, double y, double z,
@@ -137,7 +127,6 @@ int off_intersect_all(double* t0, double* t3,
 *         t0 and t3 are the smallest incoming and outgoing intersection times
 *         n0 and n3 are the corresponding normal vectors to the surface
 *******************************************************************************/
-#pragma acc routine
 int off_intersect(double* t0, double* t3,
      Coords *n0, Coords *n3,
      double x, double y, double z,
@@ -158,7 +147,6 @@ int off_intersect(double* t0, double* t3,
 *         l0 and l3 are the smallest incoming and outgoing intersection lengths
 *         n0 and n3 are the corresponding normal vectors to the surface
 *******************************************************************************/
-#pragma acc routine
 int off_x_intersect(double *l0,double *l3,
      Coords *n0, Coords *n3,
      double x,  double y,  double z,
